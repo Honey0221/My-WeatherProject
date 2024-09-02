@@ -19,6 +19,7 @@ import zerobase.weather.repository.DateWeatherRepository;
 import zerobase.weather.repository.DiaryRepository;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -117,16 +118,7 @@ public class DiaryService {
         String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=incheon&appid=" + apiKey;
         try {
 
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            BufferedReader br;
-            if (responseCode == 200) {
-                br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            } else {
-                br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-            }
+            BufferedReader br = getBufferedReader(apiUrl);
             String inputLine;
             StringBuilder response = new StringBuilder();
             while ((inputLine = br.readLine()) != null) {
@@ -137,6 +129,21 @@ public class DiaryService {
         } catch (Exception e) {
             return "failed to get response";
         }
+    }
+
+    private static BufferedReader getBufferedReader(String apiUrl) throws IOException {
+        URL url;
+        url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
+        BufferedReader br;
+        if (responseCode == 200) {
+            br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        } else {
+            br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+        }
+        return br;
     }
 
     private Map<String, Object> parseWeather(String jsonString) {
